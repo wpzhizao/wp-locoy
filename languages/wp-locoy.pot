@@ -1,0 +1,166 @@
+# Copyright (C) 2022 Scode
+# This file is distributed under the same license as the WP Locoy - WordPress火车头发布接口 plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Locoy - WordPress火车头发布接口 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-locoy\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2022-03-15T01:19:08+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.4.0\n"
+"X-Domain: wp-locoy\n"
+
+#. Plugin Name of the plugin
+msgid "WP Locoy - WordPress火车头发布接口"
+msgstr ""
+
+#. Description of the plugin
+msgid "火车头采集器的WordPress免登录发布接口插件。支持自定义字段和自定义分类，本地文件上传等。符合WordPress插入文章的流程规范，方便二次开发。"
+msgstr ""
+
+#. Author of the plugin
+msgid "Scode"
+msgstr ""
+
+#: inc/PublishApi.php:29
+msgid "只接受POST请求"
+msgstr ""
+
+#: inc/PublishApi.php:33
+#: inc/SettingsPage.php:165
+msgid "无效的密钥"
+msgstr ""
+
+#: inc/PublishApi.php:40
+#: inc/SettingsPage.php:163
+msgid "标题为空"
+msgstr ""
+
+#: inc/PublishApi.php:50
+#: inc/SettingsPage.php:164
+msgid "标题重复"
+msgstr ""
+
+#: inc/SettingsPage.php:26
+msgid "火车头发布接口"
+msgstr ""
+
+#: inc/SettingsPage.php:27
+msgid "火车头"
+msgstr ""
+
+#: inc/SettingsPage.php:54
+msgid "发布接口密钥"
+msgstr ""
+
+#: inc/SettingsPage.php:61
+msgid "检查标题为空"
+msgstr ""
+
+#: inc/SettingsPage.php:62
+msgid "检查标题是否为空，如为空，不发布。"
+msgstr ""
+
+#: inc/SettingsPage.php:70
+msgid "判断标题重复"
+msgstr ""
+
+#: inc/SettingsPage.php:73
+msgid "判断标题是否重复，如重复，不发布。"
+msgstr ""
+
+#: inc/SettingsPage.php:79
+msgid "默认文章作者"
+msgstr ""
+
+#: inc/SettingsPage.php:80
+msgid "当【Post数据内容】里没有设置表单名<code>post_author</code>或为空时，使用此设置作为默认作者。"
+msgstr ""
+
+#: inc/SettingsPage.php:97
+msgid "文章日期间隔"
+msgstr ""
+
+#: inc/SettingsPage.php:98
+msgid "定时文章的发布日期间隔，单位为秒。如不设置或设置为0，文章会即时发布。"
+msgstr ""
+
+#: inc/SettingsPage.php:159
+msgid "添加成功"
+msgstr ""
+
+#: inc/SettingsPage.php:176
+msgid "请将以下信息复制粘贴到火车头里的对应位置。"
+msgstr ""
+
+#: inc/SettingsPage.php:181
+msgid "发布地址后缀"
+msgstr ""
+
+#: inc/SettingsPage.php:187
+msgid "发布成功标识码"
+msgstr ""
+
+#: inc/SettingsPage.php:195
+msgid "发布失败标识码"
+msgstr ""
+
+#: inc/SettingsPage.php:203
+msgid "Post数据内容"
+msgstr ""
+
+#: inc/SettingsPage.php:205
+msgid "这仅是一个支持的表单名和表单值参考列表，实际使用中只需要在火车头里设置需要的表单名即可。"
+msgstr ""
+
+#: inc/SettingsPage.php:222
+msgid "文章类型，默认<code>post</code>"
+msgstr ""
+
+#: inc/SettingsPage.php:227
+msgid "标题"
+msgstr ""
+
+#: inc/SettingsPage.php:232
+msgid "内容"
+msgstr ""
+
+#: inc/SettingsPage.php:237
+msgid "摘要"
+msgstr ""
+
+#: inc/SettingsPage.php:242
+msgid "日期"
+msgstr ""
+
+#: inc/SettingsPage.php:247
+msgid "作者，默认使用设置里的【默认文章作者】"
+msgstr ""
+
+#: inc/SettingsPage.php:252
+msgid "文章分类"
+msgstr ""
+
+#: inc/SettingsPage.php:257
+msgid "文章标签"
+msgstr ""
+
+#: inc/SettingsPage.php:262
+msgid "自定义分类"
+msgstr ""
+
+#: inc/SettingsPage.php:267
+msgid "自定义字段，字段名建议用英文"
+msgstr ""
+
+#: inc/SettingsPage.php:289
+msgid "文件上传设置"
+msgstr ""
+
+#: inc/SettingsPage.php:291
+msgid "【高级功能】->【文件上传设置】"
+msgstr ""
