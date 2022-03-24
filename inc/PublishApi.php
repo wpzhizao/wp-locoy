@@ -3,7 +3,6 @@
 namespace WPLocoy;
 
 use WP_Error;
-use WP_Query;
 
 class PublishApi {
     public string $secret = '';
@@ -16,7 +15,7 @@ class PublishApi {
 
     public int $default_post_author = 1;
 
-    public function construct($args = array()) {
+    public function __construct($args = array()) {
         foreach (get_object_vars($this) as $key => $value) {
             if (isset($args[$key])) {
                 $this->$key = $args[$key];
@@ -34,6 +33,11 @@ class PublishApi {
         }
 
         $post_title = !empty($_POST['post_title']) ? trim(stripslashes($_POST['post_title'])) : '';
+
+        // Check post type.
+        if (isset($_POST['post_type']) && !get_post_type_object($_POST['post_type'])) {
+            return new WP_Error('invalid_post_type', __('无效的文章类型。', 'wp-locoy'));
+        }
 
         // Check title empty.
         if ($this->check_title_empty && $post_title == '') {
@@ -64,8 +68,9 @@ class PublishApi {
         ), $_POST);
 
         // Handle post date.
-        if (!empty($postattr['post_date'])) {
-            $post_date = $postarr['post_date'];
+        if (!empty($postarr['post_date'])) {
+            $post_time = strtotime($postarr['post_date']);
+            $post_date = date('Y-m-d H:i:s', $post_time);
         } else {
             // Calc post date.
             $post_date = current_time('mysql');
@@ -76,6 +81,7 @@ class PublishApi {
                 $post_date = date('Y-m-d H:i:s', $post_time);
             }
         }
+        $postarr['post_date'] = $post_date;
 
         // Handle post author.
         $post_author = 0;
@@ -97,7 +103,6 @@ class PublishApi {
         } else {
             $post_author = $this->default_post_author;
         }
-
         $postarr['post_author'] = $post_author;
 
         // Handle `post_category`
@@ -137,41 +142,59 @@ class PublishApi {
 
         $post_id = wp_insert_post($postarr, true, true);
 
-        if ($post_id) {
-            require_once ABSPATH . 'wp-admin/includes/file.php';
-            require_once ABSPATH . 'wp-admin/includes/image.php';
-            require_once ABSPATH . 'wp-admin/includes/media.php';
+        if (is_wp_error($post_id)) {
+            return $post_id;
+        }
 
-            // Handle post images.
-            $i = 0;
-            $post = get_post($post_id);
-            $post_content = $post->post_content;
-            while (isset($_FILES["post_image{$i}"])) {
-                $filename = $_FILES["post_image{$i}"]['name'];
+        if (!$post_id) {
+            return new WP_Error(__('unkown_error', __('未知错误，发布失败。', 'wp-locoy')));
+        }
 
-                $image_id = media_handle_upload("post_image{$i}", $post_id);
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
 
-                if (!is_wp_error($image_id)) {
-                    $image_url = wp_get_attachment_image_url($image_id);
+        $post_thumbnail_set = false;
 
-                    if ($post_content)
-                        $post_content = str_replace($filename, $image_url, $post_content);
+        // Handle thumbnail file.
+        if (!empty($_FILES['thumbnail_file'])) {
+            $thumbnail_id = media_handle_upload('thumbnail_file', $post_id);
+
+            if (!is_wp_error($thumbnail_id)) {
+                set_post_thumbnail($post_id, $thumbnail_id);
+                $post_thumbnail_set = true;
+            }
+        }
+
+        // Handle post images.
+        $i = 0;
+        $post = get_post($post_id);
+        $post_content = $post->post_content;
+
+        $set_first_post_image_as_post_thumbnail = true;
+
+        while (isset($_FILES["post_image{$i}"])) {
+            $filename = $_FILES["post_image{$i}"]['name'];
+
+            $image_id = media_handle_upload("post_image{$i}", $post_id);
+
+            if (!is_wp_error($image_id)) {
+                $image_url = wp_get_attachment_image_url($image_id);
+
+                if ($set_first_post_image_as_post_thumbnail && !$post_thumbnail_set) {
+                    set_post_thumbnail($post_id, $image_id);
+                    $post_thumbnail_set = true;
                 }
 
-                $i++;
+                if ($post_content)
+                    $post_content = str_replace($filename, $image_url, $post_content);
             }
 
-            if ($post_content)
-                wp_update_post(array('ID' => $post_id, 'post_content' => $post_content), true, false);
+            $i++;
+        }
 
-            // Handle thumbnail file.
-            if (!empty($_FILES['thumbnail_file'])) {
-                $thumbnail_id = media_handle_upload('thumbnail_file', $post_id);
-
-                if (!is_wp_error($thumbnail_id)) {
-                    set_post_thumbnail($post_id, $thumbnail_id);
-                }
-            }
+        if ($post_content) {
+            wp_update_post(array('ID' => $post_id, 'post_content' => $post_content), true, false);
         }
 
         return $post_id;

@@ -131,7 +131,7 @@ class SettingsPage {
                         'label' => '帮助'
                     )
                 );
-                $current_tab = $_GET['tab'] ? $_GET['tab'] : 'general';
+                $current_tab = !empty($_GET['tab']) ? $_GET['tab'] : 'general';
                 foreach ($tabs as $tab) {
                     $tab_url = sprintf('?page=%s&tab=%s', $plugin_page, $tab['id']);
                     $class = 'nav-tab' . ($current_tab == $tab['id'] ? ' nav-tab-active' : '');
@@ -156,7 +156,7 @@ class SettingsPage {
 
     public function tab_help() {
         $success_messages = array(
-            __('添加成功', 'wp-locoy')
+            __('发布成功', 'wp-locoy')
         );
 
         $error_messages = array(

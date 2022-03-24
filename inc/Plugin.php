@@ -21,6 +21,7 @@ final class Plugin {
 	}
 
 	public static function load() {
+		// delete_option('wp_locoy_settings');
 		register_setting(
 			'wp-locoy-settings',
 			'wp_locoy_settings',
@@ -49,15 +50,20 @@ final class Plugin {
 
 		$api = new PublishApi($settings);
 
-		$r = $api->publish();
+		$post_id = $api->publish();
 
-		if (is_wp_error($r)) {
-			echo $r->get_error_message();
+		if (is_wp_error($post_id)) {
+			$message = $post_id->get_error_message();
 		} else {
-			echo __('添加成功', '');
+			$message = sprintf(
+				__('发布成功: ID为%s %s %s', 'wp-locoy'),
+				$post_id,
+				'<a href="' . get_permalink($post_id) . '">查看</a>',
+				'<a href="' . get_edit_post_link($post_id) . '">编辑</a>'
+			);
 		}
 
-		die;
+		die($message);
 	}
 
 	public static function is_locoy_page() {

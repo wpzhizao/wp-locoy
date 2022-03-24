@@ -1,8 +1,8 @@
-# WP Locoy - WordPress火车头发布接口
+# WP Locoy - WordPress火车头发布接口插件
 
-**Contributors:** Cloud Stone
+**Contributors:** wpzhizao
 Version: 1.0.0
-**Requires PHP:** 7.4.0 \
+**Requires PHP:** 7.4.0  \
 **Requires at least:** 5.6 \
 **License:** GPLv2 or later
 
