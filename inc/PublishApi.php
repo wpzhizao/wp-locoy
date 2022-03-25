@@ -24,7 +24,10 @@ class PublishApi {
     }
 
     public function publish() {
-        if (empty($_POST))
+        $postarr = $_POST;
+        $unsanitized_postarr = $postarr;
+
+        if (empty($postarr))
             return new WP_Error('post_request_only', __('只接受POST请求', 'wp-locoy'));;
 
         // Check secret.
@@ -32,10 +35,10 @@ class PublishApi {
             return new WP_Error('invalid_secret', __('无效的密钥', 'wp-locoy'));
         }
 
-        $post_title = !empty($_POST['post_title']) ? trim(stripslashes($_POST['post_title'])) : '';
+        $post_title = !empty($postarr['post_title']) ? trim(stripslashes($postarr['post_title'])) : '';
 
         // Check post type.
-        if (isset($_POST['post_type']) && !get_post_type_object($_POST['post_type'])) {
+        if (isset($postarr['post_type']) && !get_post_type_object($postarr['post_type'])) {
             return new WP_Error('invalid_post_type', __('无效的文章类型。', 'wp-locoy'));
         }
 
@@ -45,7 +48,7 @@ class PublishApi {
         }
 
         // check title duplicate.
-        $post_type = empty($_POST['post_type']) ? 'post' : $_POST['post_type'];
+        $post_type = empty($postarr['post_type']) ? 'post' : $postarr['post_type'];
 
         if ($this->check_title_dup) {
             $post_before = get_page_by_title($post_title, OBJECT, $post_type);
@@ -56,16 +59,18 @@ class PublishApi {
         }
 
         // Map post fields.
-        $_POST = $this->map_postarr($_POST);
+        $postarr = $this->map_postarr($postarr);
 
         // Sanitize post data.
-        if (!empty($_POST['ID'])) {
-            unset($_POST['ID']);
+        if (!empty($postarr['ID'])) {
+            unset($postarr['ID']);
         }
 
         $postarr = array_merge(array(
             'post_status' => 'publish'
-        ), $_POST);
+        ), $postarr);
+
+        $postarr = apply_filters('wp_locoy_post_data', $postarr, $unsanitized_postarr);
 
         // Handle post date.
         if (!empty($postarr['post_date'])) {
