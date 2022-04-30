@@ -84,7 +84,7 @@ class SettingsPage {
                     array(
                         'role' => 'administrator',
                         'echo' => false,
-                        'name' => 'wp_locoy_settings[default_post_author]',
+                        'title' => 'wp_locoy_settings[default_post_author]',
                         'id' => 'default_post_author',
                         'default' => '',
                         'selected' => $settings['default_post_author'] ?? ''
@@ -217,52 +217,52 @@ class SettingsPage {
                                 <?php
                                 $fields = array(
                                     array(
-                                        'name' => 'post_type',
+                                        'title' => 'post_type',
                                         'value' => 'post',
                                         'info' =>  __('文章类型，默认<code>post</code>', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'post_title',
+                                        'title' => 'post_title',
                                         'value' => '[标签:标题]',
                                         'info' =>  __('标题', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'post_content',
+                                        'title' => 'post_content',
                                         'value' => '[标签:内容]',
                                         'info' =>  __('内容', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'post_excerpt',
+                                        'title' => 'post_excerpt',
                                         'value' => '[标签:摘要]',
                                         'info' =>  __('摘要', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'post_date',
+                                        'title' => 'post_date',
                                         'value' => '[标签:日期]',
                                         'info' =>  __('日期', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'post_author',
+                                        'title' => 'post_author',
                                         'value' => '[标签:作者]',
                                         'info' =>  __('作者，默认使用设置里的【默认文章作者】', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => '[post_category]',
+                                        'title' => '[post_category]',
                                         'value' => '[标签:分类]',
                                         'info' =>  __('文章分类', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'tags_input',
+                                        'title' => 'tags_input',
                                         'value' => '[标签:标签]',
                                         'info' =>  __('文章标签', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'tax_input[自定义分类]',
+                                        'title' => 'tax_input[自定义分类]',
                                         'value' => '[标签:自定义分类]',
                                         'info' =>  __('自定义分类', 'wp-locoy')
                                     ),
                                     array(
-                                        'name' => 'meta_input[字段名]',
+                                        'title' => 'meta_input[字段名]',
                                         'value' => '[标签:来源]',
                                         'info' =>  __('自定义字段，字段名建议用英文', 'wp-locoy')
                                     ),
@@ -270,7 +270,7 @@ class SettingsPage {
 
                                 foreach ($fields as $field) {
                                     echo ' <tr>
-                                    <td>' . $field['name'] . '</td>
+                                    <td>' . $field['title'] . '</td>
                                     <td>' . $field['value'] . '</td>
                                     <td>' . $field['info'] . '</td>
                                 </tr>';
@@ -303,18 +303,18 @@ class SettingsPage {
                                 $fields = array(
                                     array(
                                         'tag_name' => '内容',
-                                        'name' => 'post_image递增数字'
+                                        'title' => 'post_image递增数字'
                                     ),
                                     array(
                                         'tag_name' => '缩略图',
-                                        'name' => 'thumbnail_file'
+                                        'title' => 'thumbnail_file'
                                     ),
                                 );
 
                                 foreach ($fields as $field) {
                                     echo ' <tr>
                                     <td>' . $field['tag_name'] . '</td>
-                                    <td>' . $field['name'] . '</td>
+                                    <td>' . $field['title'] . '</td>
                                 </tr>';
                                 }
                                 ?>

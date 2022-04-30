@@ -179,7 +179,7 @@ class PublishApi {
         $set_first_post_image_as_post_thumbnail = true;
 
         while (isset($_FILES["post_image{$i}"])) {
-            $filename = $_FILES["post_image{$i}"]['name'];
+            $filename = $_FILES["post_image{$i}"]['title'];
 
             $image_id = media_handle_upload("post_image{$i}", $post_id);
 
@@ -201,6 +201,9 @@ class PublishApi {
         if ($post_content) {
             wp_update_post(array('ID' => $post_id, 'post_content' => $post_content), true, false);
         }
+
+        $post = get_post($post_id);
+        do_action('wp_locoy_after_insert_post', $post_id, $post, $postarr);
 
         return $post_id;
     }
@@ -259,7 +262,7 @@ class PublishApi {
         $term_ids = array();
         $errors = array();
         foreach ($terms as $term) {
-            $term_obj = get_term_by($this->is_int($term) ? 'id' : 'name', $term, $taxonomy);
+            $term_obj = get_term_by($this->is_int($term) ? 'id' : 'title', $term, $taxonomy);
 
             if ($term_obj) {
                 $term_ids[] = $term_obj->term_id;
