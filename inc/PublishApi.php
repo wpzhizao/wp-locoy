@@ -125,17 +125,33 @@ class PublishApi {
 
         // Handle `tax_input`
         if (!empty($postarr['tax_input'])) {
-            // create terms for hierarchical taxonomy.
             foreach ($postarr['tax_input'] as $taxonomy => $terms) {
                 $taxonomy_obj = get_taxonomy($taxonomy);
 
-                if ($taxonomy_obj->hierarchical) {
-                    $terms_data = $this->insert_terms($terms, $taxonomy);
+                if (!$taxonomy_obj) {
+                    unset($postarr['tax_input'][$taxonomy]);
+                    continue;
+                }
 
-                    if (!empty($terms_data['term_ids'])) {
-                        $postarr['tax_input'][$taxonomy] = $terms_data['term_ids'];
-                    } else {
-                        unset($postarr['tax_input'][$taxonomy]);
+                // create terms for hierarchical taxonomy.
+                if ($taxonomy_obj->hierarchical) {
+                    $term_ids_is_int = false;
+                    foreach ($terms as $term) {
+                        $term_ids_is_int = is_int($term);
+
+                        if (!$term_ids_is_int) {
+                            break;
+                        }
+                    }
+
+                    if (!$term_ids_is_int) {
+                        $terms_data = $this->insert_hierarchical_terms($terms, $taxonomy);
+
+                        if (!empty($terms_data['term_ids'])) {
+                            $postarr['tax_input'][$taxonomy] = $terms_data['term_ids'];
+                        } else {
+                            unset($postarr['tax_input'][$taxonomy]);
+                        }
                     }
                 }
             }
@@ -143,7 +159,7 @@ class PublishApi {
 
         // Set global `$current_user` to pass `current_user_can` check.
         global $current_user;
-        $current_user = get_user_by('id', $this->default_post_author);
+        $current_user = get_user_by('id', $post_author);
 
         $post_id = wp_insert_post($postarr, true, true);
 
@@ -246,6 +262,35 @@ class PublishApi {
         return $postarr;
     }
 
+    public function insert_hierarchical_terms($term_names, $taxonomy, $args = array()) {
+        $term_ids = array();
+        $parent_id = 0;
+        foreach ($term_names as $term_name) {
+            $term_id = null;
+
+            $result = wp_insert_term($term_name, $taxonomy, array(
+                'parent' => $parent_id
+            ));
+
+            if (is_wp_error($result)) {
+                if ($result->get_error_code() == 'term_exists') {
+                    $term_id = $result->get_error_data();
+                }
+            } elseif (!empty($result['term_id'])) {
+                $term_id = $result['term_id'];
+            }
+
+            if ($term_id) {
+                $parent_id = $term_id;
+                $term_ids[] = $term_id;
+            } else {
+                break;
+            }
+        }
+
+        return $term_ids;
+    }
+
     public function verify_secret() {
         return !empty($_REQUEST['secret']) && $_REQUEST['secret'] == $this->secret;
     }
@@ -288,7 +333,7 @@ class PublishApi {
      * @param [type] $timezone
      * @param [type] $field
      * @param string $post_type
-     * @return void
+     * @return string The date of the last post, or false on failure.
      */
     function get_last_post_date($timezone = 'server', $field = 'date', $post_type = 'any') {
         global $wpdb;

@@ -36,7 +36,6 @@ class SettingsPage {
     public function settings_init() {
         // delete_option('wp_locoy_settings');
 
-
         $section = 'wp_locoy_settings_general';
 
         add_settings_section(
@@ -82,9 +81,9 @@ class SettingsPage {
                 'type' => 'custom',
                 'custom' => wp_dropdown_users(
                     array(
-                        'role' => 'administrator',
+                        'role__in' => ['administrator', 'editor', 'author'],
                         'echo' => false,
-                        'title' => 'wp_locoy_settings[default_post_author]',
+                        'name' => 'wp_locoy_settings[default_post_author]',
                         'id' => 'default_post_author',
                         'default' => '',
                         'selected' => $settings['default_post_author'] ?? ''
@@ -155,6 +154,7 @@ class SettingsPage {
     <?php }
 
     public function tab_help() {
+
         $success_messages = array(
             __('发布成功', 'wp-locoy')
         );
@@ -166,6 +166,9 @@ class SettingsPage {
         );
 
         $settings = get_option('wp_locoy_settings');
+
+
+
         $secret = $settings['secret'] ?? '';
         // untrailingslashit(home_url()) . 
         $publish_url = '?wp-locoy&secret=' . $secret;

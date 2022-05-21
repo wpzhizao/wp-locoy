@@ -15,5 +15,7 @@ namespace WPLocoy;
 define('WP_LOCOY_PATH', plugin_dir_path(__FILE__));
 define('WP_LOCOY_URL', plugin_dir_url(__FILE__));
 
-require_once WP_LOCOY_PATH . 'inc/Plugin.php';
+require_once WP_LOCOY_PATH . 'inc/AutoLoader.php';
+new AutoLoader('WPLocoy', WP_LOCOY_PATH . 'inc');
+
 Plugin::init();
