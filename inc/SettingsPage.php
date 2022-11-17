@@ -2,16 +2,19 @@
 
 namespace WPLocoy;
 
-class SettingsPage {
+class SettingsPage
+{
     private $option_page = 'wp-locoy-settings';
     private $page_hook;
 
-    public function __construct() {
+    public function __construct()
+    {
         add_action('admin_menu', array($this, 'add_page'));
         add_action('admin_init', array($this, 'settings_init'));
     }
 
-    public function remove_admin_notices() {
+    public function remove_admin_notices()
+    {
         global $page_hook;
         if ($page_hook !== $this->page_hook) {
             return;
@@ -21,7 +24,8 @@ class SettingsPage {
         remove_all_actions('all_admin_notices');
     }
 
-    public function add_page() {
+    public function add_page()
+    {
         $this->page_hook = add_options_page(
             __('火车头发布接口', 'wp-locoy'),
             __('火车头', 'wp-locoy'),
@@ -33,7 +37,8 @@ class SettingsPage {
         add_action("admin_head-{$this->page_hook}", array($this, 'remove_admin_notices'), 999);
     }
 
-    public function settings_init() {
+    public function settings_init()
+    {
         // delete_option('wp_locoy_settings');
 
         $section = 'wp_locoy_settings_general';
@@ -112,7 +117,8 @@ class SettingsPage {
         }
     }
 
-    public function page_callback() {
+    public function page_callback()
+    {
         global $plugin_page;
 ?>
         <div class="wrap">
@@ -142,7 +148,8 @@ class SettingsPage {
             <?php call_user_func(array($this, 'tab_' . $current_tab)); ?>
         <?php }
 
-    public function tab_general() { ?>
+    public function tab_general()
+    { ?>
             <form method="POST" action="options.php">
                 <?php
                 settings_fields($this->option_page);
@@ -153,7 +160,8 @@ class SettingsPage {
         </div>
     <?php }
 
-    public function tab_help() {
+    public function tab_help()
+    {
 
         $success_messages = array(
             __('发布成功', 'wp-locoy')
@@ -331,7 +339,8 @@ class SettingsPage {
 
 <?php }
 
-    public function field_callback($field) {
+    public function field_callback($field)
+    {
         $settings = get_option('wp_locoy_settings');
 
         $field_id = $field['id'];

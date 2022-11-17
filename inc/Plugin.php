@@ -5,8 +5,10 @@ namespace WPLocoy;
 use WPLocoy\Settings;
 use WPLocoy\SettingsPage;
 
-final class Plugin {
-	public static function init() {
+final class Plugin
+{
+	public static function init()
+	{
 		Settings::init();
 
 		new SettingsPage();
@@ -16,8 +18,8 @@ final class Plugin {
 
 
 
-	public static function load() {
-
+	public static function load()
+	{
 
 		if (!self::is_locoy_page()) {
 			return;
@@ -47,7 +49,8 @@ final class Plugin {
 		die($message);
 	}
 
-	public static function is_locoy_page() {
+	public static function is_locoy_page()
+	{
 		return isset($_REQUEST['wp-locoy']);
 	}
 }

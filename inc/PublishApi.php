@@ -266,12 +266,12 @@ class PublishApi {
         $term_ids = array();
         $parent_id = 0;
         foreach ($term_names as $term_name) {
-            $term_id = null;
 
             $result = wp_insert_term($term_name, $taxonomy, array(
                 'parent' => $parent_id
             ));
 
+            $term_id = null;
             if (is_wp_error($result)) {
                 if ($result->get_error_code() == 'term_exists') {
                     $term_id = $result->get_error_data();
