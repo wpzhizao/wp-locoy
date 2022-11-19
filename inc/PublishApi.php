@@ -11,9 +11,13 @@ class PublishApi {
 
     public bool $check_title_dup = false;
 
+    public bool $check_slug_dup = true;
+
     public int $post_date_interval = 0;
 
     public int $default_post_author = 1;
+
+    public $ondup = 'update'; // skip
 
     public function __construct($args = array()) {
         foreach (get_object_vars($this) as $key => $value) {
@@ -23,17 +27,11 @@ class PublishApi {
         }
     }
 
-    public function publish() {
-        $postarr = $_POST;
+
+
+
+    public function publish($postarr) {
         $unsanitized_postarr = $postarr;
-
-        if (empty($postarr))
-            return new WP_Error('post_request_only', __('只接受POST请求', 'wp-locoy'));;
-
-        // Check secret.
-        if (!$this->verify_secret()) {
-            return new WP_Error('invalid_secret', __('无效的密钥', 'wp-locoy'));
-        }
 
         $post_title = !empty($postarr['post_title']) ? trim(stripslashes($postarr['post_title'])) : '';
 
@@ -50,27 +48,51 @@ class PublishApi {
         // check title duplicate.
         $post_type = empty($postarr['post_type']) ? 'post' : $postarr['post_type'];
 
+        $post_before = null;
         if ($this->check_title_dup) {
-            $post_before = get_page_by_title($post_title, OBJECT, $post_type);
+            $title_to_check = $post_title;
 
-            if ($post_before) {
-                return new WP_Error('dup_title', __('标题重复', 'wp-locoy'));
+            $post_before = get_page_by_title($title_to_check, OBJECT, $post_type);
+
+            if ($this->check_slug_dup && !$post_before) {
+                $post_before = get_page_by_path(sanitize_title($title_to_check), OBJECT, $post_type);
             }
         }
 
+        if ($post_before && $this->ondup == 'skip') {
+            return new WP_Error('dup_title', __('标题重复', 'wp-locoy'));
+        }
+
+
+
         // Map post fields.
         $postarr = $this->map_postarr($postarr);
+
+
 
         // Sanitize post data.
         if (!empty($postarr['ID'])) {
             unset($postarr['ID']);
         }
 
+
+
+        if ($post_before) {
+            $postarr['ID'] = $post_before->ID;
+        }
+
+
+
+
         $postarr = array_merge(array(
             'post_status' => 'publish'
         ), $postarr);
 
+
+
         $postarr = apply_filters('wp_locoy_post_data', $postarr, $unsanitized_postarr);
+
+
 
         // Handle post date.
         if (!empty($postarr['post_date'])) {
@@ -87,6 +109,9 @@ class PublishApi {
             }
         }
         $postarr['post_date'] = $post_date;
+
+
+
 
         // Handle post author.
         $post_author = 0;
@@ -157,9 +182,12 @@ class PublishApi {
             }
         }
 
+
         // Set global `$current_user` to pass `current_user_can` check.
         global $current_user;
         $current_user = get_user_by('id', $post_author);
+
+
 
         $post_id = wp_insert_post($postarr, true, true);
 
@@ -170,6 +198,8 @@ class PublishApi {
         if (!$post_id) {
             return new WP_Error(__('unkown_error', __('未知错误，发布失败。', 'wp-locoy')));
         }
+
+
 
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/image.php';
@@ -193,6 +223,8 @@ class PublishApi {
         $post_content = $post->post_content;
 
         $set_first_post_image_as_post_thumbnail = true;
+
+
 
         while (isset($_FILES["post_image{$i}"])) {
             $filename = $_FILES["post_image{$i}"]['title'];
@@ -291,9 +323,7 @@ class PublishApi {
         return $term_ids;
     }
 
-    public function verify_secret() {
-        return !empty($_REQUEST['secret']) && $_REQUEST['secret'] == $this->secret;
-    }
+
 
     public function insert_terms($terms, $taxonomy) {
         if (!is_array($terms)) {
