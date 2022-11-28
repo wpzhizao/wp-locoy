@@ -23,11 +23,12 @@ class SettingsPage {
 
     public function add_page() {
         $this->page_hook = add_options_page(
-            __('火车头发布接口', 'wp-locoy'),
-            __('火车头', 'wp-locoy'),
+            __('Publish API Settings', 'wp-locoy'),
+            __('Publish API', 'wp-locoy'),
             'manage_options',
             $this->option_page,
-            array($this, 'page_callback')
+            array($this, 'page_callback'),
+            2
         );
 
         add_action("admin_head-{$this->page_hook}", array($this, 'remove_admin_notices'), 999);
@@ -109,6 +110,8 @@ class SettingsPage {
 ?>
         <div class="wrap">
             <h1><?php echo get_admin_page_title(); ?></h1>
+
+            <br />
 
             <nav class="nav-tab-wrapper">
                 <?php

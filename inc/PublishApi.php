@@ -11,7 +11,7 @@ class PublishApi {
 
     public bool $check_title_dup = false;
 
-    public bool $check_slug_dup = true;
+    public bool $check_slug_dup = false;
 
     public int $post_date_interval = 0;
 
@@ -26,9 +26,6 @@ class PublishApi {
             }
         }
     }
-
-
-
 
     public function publish($postarr) {
         $unsanitized_postarr = $postarr;
@@ -51,12 +48,12 @@ class PublishApi {
         $post_before = null;
         if ($this->check_title_dup) {
             $title_to_check = $post_title;
-
             $post_before = get_page_by_title($title_to_check, OBJECT, $post_type);
+        }
 
-            if ($this->check_slug_dup && !$post_before) {
-                $post_before = get_page_by_path(sanitize_title($title_to_check), OBJECT, $post_type);
-            }
+        if ($this->check_slug_dup && !$post_before) {
+            $slug_to_check = !empty($postarr['post_name']) ? $postarr['post_name'] : sanitize_title($post_title);
+            $post_before = get_page_by_path($slug_to_check, OBJECT, $post_type);
         }
 
         if ($post_before && $this->ondup == 'skip') {
@@ -98,6 +95,11 @@ class PublishApi {
         if (!empty($postarr['post_date'])) {
             $post_time = strtotime($postarr['post_date']);
             $post_date = date('Y-m-d H:i:s', $post_time);
+            $postarr['post_date'] = $post_date;
+        } elseif (!empty($postarr['post_date_gmt'])) {
+            $post_time = strtotime($postarr['post_date_gmt']);
+            $post_date = date('Y-m-d H:i:s', $post_time);
+            $postarr['post_date_gmt'] = $post_date;
         } else {
             // Calc post date.
             $post_date = current_time('mysql');
@@ -108,8 +110,6 @@ class PublishApi {
                 $post_date = date('Y-m-d H:i:s', $post_time);
             }
         }
-        $postarr['post_date'] = $post_date;
-
 
 
 
@@ -199,11 +199,12 @@ class PublishApi {
             return new WP_Error(__('unkown_error', __('未知错误，发布失败。', 'wp-locoy')));
         }
 
+        if (!empty($_FILES['thumbnail_file']) || !empty($_FILES["post_image"])) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+            require_once ABSPATH . 'wp-admin/includes/media.php';
+        }
 
-
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-        require_once ABSPATH . 'wp-admin/includes/media.php';
 
         $post_thumbnail_set = false;
 
@@ -218,36 +219,36 @@ class PublishApi {
         }
 
         // Handle post images.
-        $i = 0;
-        $post = get_post($post_id);
-        $post_content = $post->post_content;
+        if (!empty($_FILES["post_image"])) {
+            $i = 0;
+            $post = get_post($post_id);
+            $post_content = $post->post_content;
 
-        $set_first_post_image_as_post_thumbnail = true;
+            $set_first_post_image_as_post_thumbnail = true;
 
+            while (isset($_FILES["post_image{$i}"])) {
+                $filename = $_FILES["post_image{$i}"]['title'];
 
+                $image_id = media_handle_upload("post_image{$i}", $post_id);
 
-        while (isset($_FILES["post_image{$i}"])) {
-            $filename = $_FILES["post_image{$i}"]['title'];
+                if (!is_wp_error($image_id)) {
+                    $image_url = wp_get_attachment_image_url($image_id);
 
-            $image_id = media_handle_upload("post_image{$i}", $post_id);
+                    if ($set_first_post_image_as_post_thumbnail && !$post_thumbnail_set) {
+                        set_post_thumbnail($post_id, $image_id);
+                        $post_thumbnail_set = true;
+                    }
 
-            if (!is_wp_error($image_id)) {
-                $image_url = wp_get_attachment_image_url($image_id);
-
-                if ($set_first_post_image_as_post_thumbnail && !$post_thumbnail_set) {
-                    set_post_thumbnail($post_id, $image_id);
-                    $post_thumbnail_set = true;
+                    if ($post_content)
+                        $post_content = str_replace($filename, $image_url, $post_content);
                 }
 
-                if ($post_content)
-                    $post_content = str_replace($filename, $image_url, $post_content);
+                $i++;
             }
 
-            $i++;
-        }
-
-        if ($post_content) {
-            wp_update_post(array('ID' => $post_id, 'post_content' => $post_content), true, false);
+            if ($post_content) {
+                wp_update_post(array('ID' => $post_id, 'post_content' => $post_content), true, false);
+            }
         }
 
         $post = get_post($post_id);
@@ -275,7 +276,7 @@ class PublishApi {
         $map = array(
             'meta_input' => array('post_meta', 'meta'),
             'tax_input'  => array('post_taxonomy_list', 'tax'),
-            'tags_input' => array('tags', 'tag', 'post_tags', 'post_tag')
+            'tags_input' => array('tags', 'post_tags', 'post_tag')
         );
 
         foreach ($map as $key => $alt_keys) {
@@ -322,8 +323,6 @@ class PublishApi {
 
         return $term_ids;
     }
-
-
 
     public function insert_terms($terms, $taxonomy) {
         if (!is_array($terms)) {
