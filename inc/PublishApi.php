@@ -11,13 +11,13 @@ class PublishApi {
 
     public bool $check_title_dup = false;
 
-    public bool $check_slug_dup = false;
+    public bool $check_slug_dup = true;
 
     public int $post_date_interval = 0;
 
     public int $default_post_author = 1;
 
-    public $ondup = 'update'; // skip
+    public $ondup = 'update'; // skip|update
 
     public function __construct($args = array()) {
         foreach (get_object_vars($this) as $key => $value) {
@@ -27,58 +27,107 @@ class PublishApi {
         }
     }
 
+    /* Get post by meta.
+    * 
+    * Note: specific post type and post status for more effectily performance.
+    */
+    public function post_exists_by_meta($meta_key, $meta_value, $args = array()) {
+        $defaults = array(
+            'post_type'      => 'any',
+            'post_status'    => 'any',
+            'posts_per_page' => 1,
+            'meta_query'     => array(
+                array(
+                    'key'     => $meta_key,
+                    'value' => $meta_value
+                )
+            ),
+            'suppress_filters' => true,
+            'ignore_sticky_posts' => true,
+            'no_found_rows'  => true,
+            'cache_results' => false,
+            'update_post_meta_cache' => false,
+            'update_term_meta_cache' => false,
+        );
+
+        $query = new \WP_Query(array_merge($defaults, $args));
+
+        return !empty($query->posts[0]) ? $query->posts[0] : 0;
+    }
+
     public function publish($postarr) {
         $unsanitized_postarr = $postarr;
-
-        $post_title = !empty($postarr['post_title']) ? trim(stripslashes($postarr['post_title'])) : '';
-
-        // Check post type.
-        if (isset($postarr['post_type']) && !get_post_type_object($postarr['post_type'])) {
-            return new WP_Error('invalid_post_type', __('无效的文章类型。', 'wp-locoy'));
-        }
-
-        // Check title empty.
-        if ($this->check_title_empty && $post_title == '') {
-            return new WP_Error('empty_title', __('标题为空', 'wp-locoy'));
-        }
-
-        // check title duplicate.
-        $post_type = empty($postarr['post_type']) ? 'post' : $postarr['post_type'];
-
-        $post_before = null;
-        if ($this->check_title_dup) {
-            $title_to_check = $post_title;
-            $post_before = get_page_by_title($title_to_check, OBJECT, $post_type);
-        }
-
-        if ($this->check_slug_dup && !$post_before) {
-            $slug_to_check = !empty($postarr['post_name']) ? $postarr['post_name'] : sanitize_title($post_title);
-            $post_before = get_page_by_path($slug_to_check, OBJECT, $post_type);
-        }
-
-        if ($post_before && $this->ondup == 'skip') {
-            return new WP_Error('dup_title', __('标题重复', 'wp-locoy'));
-        }
-
-
 
         // Map post fields.
         $postarr = $this->map_postarr($postarr);
 
+        if (!empty($postarr['meta_input']['source_id'])) {
+            $post = $this->post_exists_by_meta('source_id', $postarr['meta_input']['source_id'], ['post_type' => 'post']);
 
+            if ($post) {
+                return new WP_Error('source_id_exists', __('Source ID已存在', 'wp-locoy'), $post);
+            }
+        }
+
+        $post_title = !empty($postarr['post_title']) ? trim(stripslashes($postarr['post_title'])) : '';
+        $post_type = empty($postarr['post_type']) ? 'post' : $postarr['post_type'];
+
+        $post_before = null;
+
+        if ($postarr['ID']) {
+            $post_before = get_post($postarr['ID']);
+
+            if (!$post_before) {
+                return new WP_Error('invalid_id', __('Invalid ID', 'wp-locoy'), $post);
+            }
+        }
+
+        if (!$post_before) {
+            // Check title empty.
+            if ($this->check_title_empty && $post_title == '') {
+                return new WP_Error('empty_title', __('标题为空', 'wp-locoy'));
+            }
+
+            // Check post type.
+            if (isset($postarr['post_type']) && !get_post_type_object($postarr['post_type'])) {
+                return new WP_Error('invalid_post_type', __('无效的文章类型。', 'wp-locoy'));
+            }
+
+            // check title duplicate.
+            $post_before = null;
+            if ($this->check_title_dup) {
+                $title_to_check = $post_title;
+                $post_before = get_page_by_title($title_to_check, OBJECT, $post_type);
+
+                if ($post_before && $this->ondup == 'skip') {
+                    return new WP_Error('dup_title', __('标题重复', 'wp-locoy'), $post_before);
+                }
+            }
+
+            if ($this->check_slug_dup && !$post_before) {
+                $slug_to_check = !empty($postarr['post_name']) ? $postarr['post_name'] : sanitize_title($post_title);
+                $post_before = get_page_by_path($slug_to_check, OBJECT, $post_type);
+
+                if ($post_before && $this->ondup == 'skip') {
+                    return new WP_Error('dup_slug', __('Slug重复', 'wp-locoy'), $post_before);
+                }
+            }
+        }
 
         // Sanitize post data.
         if (!empty($postarr['ID'])) {
             unset($postarr['ID']);
         }
 
-
+        $process_status = '';
 
         if ($post_before) {
             $postarr['ID'] = $post_before->ID;
+
+            $process_status = 'updated';
+        } else {
+            $process_status = 'created';
         }
-
-
 
 
         $postarr = array_merge(array(
@@ -188,6 +237,9 @@ class PublishApi {
         $current_user = get_user_by('id', $post_author);
 
 
+        if ($post_before)
+            $postarr = array_merge(json_decode(json_encode($post_before), true), $postarr);
+
 
         $post_id = wp_insert_post($postarr, true, true);
 
@@ -254,7 +306,10 @@ class PublishApi {
         $post = get_post($post_id);
         do_action('wp_locoy_after_insert_post', $post_id, $post, $postarr);
 
-        return $post_id;
+        return [
+            'process_status' => $process_status,
+            'post_id' => $post_id
+        ];
     }
 
     public function resolve_user($user_login, $display_name = '') {

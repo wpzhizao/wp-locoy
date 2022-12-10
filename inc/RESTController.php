@@ -31,13 +31,13 @@ class RESTController extends WP_REST_Controller {
 
         $api = new PublishApi($settings);
 
-        $post_id = $api->publish($request->get_params());
+        $result = $api->publish($request->get_params());
 
-        if (is_wp_error($post_id)) {
-            return $post_id;
+        if (is_wp_error($result)) {
+            return $result;
         } else {
-            $post = get_post($post_id);
-            return new WP_REST_Response($post, 200);
+            $result['post'] = get_post($result['post_id']);
+            return new WP_REST_Response($result, 200);
         }
     }
 
