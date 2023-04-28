@@ -264,9 +264,13 @@ class PublishApi {
         if (!empty($_FILES['thumbnail_file'])) {
             $thumbnail_id = media_handle_upload('thumbnail_file', $post_id);
 
+            $thumbnail_file_required = true;
+
             if (!is_wp_error($thumbnail_id)) {
                 set_post_thumbnail($post_id, $thumbnail_id);
                 $post_thumbnail_set = true;
+            } elseif ($thumbnail_file_required) {
+                die('缩略图上传失败，停止入库');
             }
         }
 
