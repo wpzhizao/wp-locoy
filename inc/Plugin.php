@@ -18,7 +18,8 @@ final class Plugin {
 	}
 
 	public static function verify_secret() {
-		return !empty($_REQUEST['secret']) && $_REQUEST['secret'] == $this->secret;
+		$settings = get_option('wp_locoy_settings');
+		return !empty($_REQUEST['secret']) && $_REQUEST['secret'] == $settings['secret'];
 	}
 
 	public static function load() {

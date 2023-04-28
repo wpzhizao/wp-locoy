@@ -11,7 +11,6 @@ use WPLocoy\PublishApi;
 
 class RESTController extends WP_REST_Controller {
 
-
     public function register_routes() {
         $version = '1';
         $namespace = 'wp-locoy/v' . $version;

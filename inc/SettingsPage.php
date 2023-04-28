@@ -176,9 +176,9 @@ class SettingsPage {
         <table class="form-table">
             <tbody>
                 <tr>
-                    <th><?php _e('发布地址后缀', 'wp-locoy'); ?></th>
+                    <th><?php _e('发布地址', 'wp-locoy'); ?></th>
                     <td>
-                        <input readonly type="text" class="large-text" value="<?php echo $publish_url; ?>" />
+                        <input readonly type="text" class="large-text" value="<?php echo home_url($publish_url); ?>" />
                     </td>
                 </tr>
                 <tr>
@@ -340,7 +340,7 @@ class SettingsPage {
         }
         switch ($field['type']) {
             case 'dropdown_users':
-                wp_dropdown_users(
+                echo wp_dropdown_users(
                     array(
                         'role__in' => ['administrator', 'editor', 'author'],
                         'echo' => false,
