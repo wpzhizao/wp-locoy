@@ -42,11 +42,13 @@ final class Plugin {
 
 		$api = new PublishApi($settings);
 
-		$post_id = $api->publish($_POST);
 
-		if (is_wp_error($post_id)) {
-			$message = $post_id->get_error_message();
+		$result = $api->publish($_POST);
+
+		if (is_wp_error($result)) {
+			$message = $result->get_error_message();
 		} else {
+			$post_id = $result['post_id'];
 			$message = sprintf(
 				__('发布成功: ID为%s %s %s', 'wp-locoy'),
 				$post_id,
