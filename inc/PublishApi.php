@@ -3,6 +3,7 @@
 namespace WPLocoy;
 
 use WP_Error;
+use WP_Query;
 
 class PublishApi {
     public string $secret = '';
@@ -61,24 +62,25 @@ class PublishApi {
         // Map post fields.
         $postarr = $this->map_postarr($postarr);
 
-        if (!empty($postarr['meta_input']['source_id'])) {
-            $post = $this->post_exists_by_meta('source_id', $postarr['meta_input']['source_id'], ['post_type' => 'post']);
+        // check post exists by meta
+        // if (!empty($postarr['meta_input']['source_id'])) {
+        //     $post = $this->post_exists_by_meta('source_id', $postarr['meta_input']['source_id'], ['post_type' => 'post']);
 
-            if ($post) {
-                return new WP_Error('source_id_exists', __('Source ID已存在', 'wp-locoy'), $post);
-            }
-        }
+        //     if ($post) {
+        //         return new WP_Error('source_id_exists', __('Source ID已存在', 'wp-locoy'), $post);
+        //     }
+        // }
 
         $post_title = !empty($postarr['post_title']) ? trim(stripslashes($postarr['post_title'])) : '';
         $post_type = empty($postarr['post_type']) ? 'post' : $postarr['post_type'];
 
         $post_before = null;
 
-        if ($postarr['ID']) {
+        if (!empty($postarr['ID'])) {
             $post_before = get_post($postarr['ID']);
 
             if (!$post_before) {
-                return new WP_Error('invalid_id', __('Invalid ID', 'wp-locoy'), $post);
+                return new WP_Error('invalid_id', __('Invalid ID', 'wp-locoy'), $postarr);
             }
         }
 
@@ -97,7 +99,7 @@ class PublishApi {
             $post_before = null;
             if ($this->check_title_dup) {
                 $title_to_check = $post_title;
-                $post_before = get_page_by_title($title_to_check, OBJECT, $post_type);
+                $post_before = self::get_post_by_title($title_to_check, $post_type);
 
                 if ($post_before && $this->ondup == 'skip') {
                     return new WP_Error('dup_title', __('标题重复', 'wp-locoy'), $post_before);
@@ -310,6 +312,32 @@ class PublishApi {
             'process_status' => $process_status,
             'post_id' => $post_id
         ];
+    }
+
+
+    public function get_post_by_title($title, $post_type = 'post') {
+
+        $query = new WP_Query(
+            array(
+                'post_type'              => $post_type,
+                'title'                  => $title,
+                'post_status'            => 'all',
+                'numberposts'            => 1,
+                'update_post_term_cache' => false,
+                'update_post_meta_cache' => false,
+                'orderby'                => 'post_date ID',
+                'order'                  => 'ASC',
+            )
+        );
+
+        $post = null;
+
+        if (!empty($query->post)) {
+            $post = $query->post;
+        } else {
+        }
+
+        return $post;
     }
 
     public function resolve_user($user_login, $display_name = '') {

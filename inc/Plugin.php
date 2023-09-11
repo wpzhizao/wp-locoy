@@ -33,9 +33,10 @@ final class Plugin {
 		}
 
 		// Check secret.
-		if (self::verify_secret()) {
+		if (!self::verify_secret()) {
 			return new WP_Error('invalid_secret', __('无效的密钥', 'wp-locoy'));
 		}
+
 
 		$settings = get_option('wp_locoy_settings');
 
