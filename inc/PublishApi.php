@@ -253,7 +253,7 @@ class PublishApi {
             return new WP_Error(__('unkown_error', __('未知错误，发布失败。', 'wp-locoy')));
         }
 
-        if (!empty($_FILES['thumbnail_file']) || !empty($_FILES["post_image"])) {
+        if (!empty($_FILES['thumbnail_file']) || !empty($_FILES["gallery_files"])) {
             require_once ABSPATH . 'wp-admin/includes/file.php';
             require_once ABSPATH . 'wp-admin/includes/image.php';
             require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -273,17 +273,17 @@ class PublishApi {
         }
 
         // Handle post images.
-        if (!empty($_FILES["post_image"])) {
+        if (!empty($_FILES["gallery_files"])) {
             $i = 0;
             $post = get_post($post_id);
             $post_content = $post->post_content;
 
             $set_first_post_image_as_post_thumbnail = true;
 
-            while (isset($_FILES["post_image{$i}"])) {
-                $filename = $_FILES["post_image{$i}"]['title'];
+            while (isset($_FILES["gallery_files{$i}"])) {
+                $filename = $_FILES["gallery_files{$i}"]['title'];
 
-                $image_id = media_handle_upload("post_image{$i}", $post_id);
+                $image_id = media_handle_upload("gallery_files{$i}", $post_id);
 
                 if (!is_wp_error($image_id)) {
                     $image_url = wp_get_attachment_image_url($image_id);
