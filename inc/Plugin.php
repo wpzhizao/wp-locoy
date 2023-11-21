@@ -53,7 +53,7 @@ final class Plugin {
 				__('发布成功: ID为%s %s %s', 'wp-locoy'),
 				$post_id,
 				'<a href="' . get_permalink($post_id) . '">查看</a>',
-				'<a href="' . get_edit_post_link($post_id) . '">编辑</a>'
+				'<a href="' . esc_url(get_edit_post_link($post_id)) . '">编辑</a>'
 			);
 		}
 
