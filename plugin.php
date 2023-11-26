@@ -12,6 +12,7 @@
 
 namespace WPLocoy;
 
+define('WP_LOCOY_FILE', __FILE__);
 define('WP_LOCOY_PATH', plugin_dir_path(__FILE__));
 define('WP_LOCOY_URL', plugin_dir_url(__FILE__));
 
@@ -19,3 +20,7 @@ require_once WP_LOCOY_PATH . 'inc/AutoLoader.php';
 new AutoLoader('WPLocoy', WP_LOCOY_PATH . 'inc');
 
 Plugin::init();
+
+// register_activation_hook(__FILE__, function () {
+//     $settings = get_option('wp_locoy_settings');
+// });
