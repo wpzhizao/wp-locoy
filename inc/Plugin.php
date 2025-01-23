@@ -15,18 +15,7 @@ final class Plugin {
 		add_action('rest_api_init', [new RESTController(), 'register_routes']);
 
 		add_action('init', array(__CLASS__, 'load'));
-
-		$plugin = plugin_basename(WP_LOCOY_FILE);
-		add_filter("plugin_action_links_$plugin", [__CLASS__, 'add_plugin_action_links']);
 	}
-
-	public static function add_plugin_action_links($links) {
-		$settings_link = '<a href="options-general.php?page=wp-locoy-settings">Settings</a>';
-		array_unshift($links, $settings_link);
-
-		return $links;
-	}
-
 
 	public static function verify_secret() {
 		$settings = get_option('wp_locoy_settings');
@@ -64,7 +53,7 @@ final class Plugin {
 				__('发布成功: ID为%s %s %s', 'wp-locoy'),
 				$post_id,
 				'<a href="' . get_permalink($post_id) . '">查看</a>',
-				'<a href="' . esc_url(get_edit_post_link($post_id)) . '">编辑</a>'
+				'<a href="' . get_edit_post_link($post_id) . '">编辑</a>'
 			);
 		}
 

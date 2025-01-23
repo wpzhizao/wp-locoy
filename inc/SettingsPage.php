@@ -245,7 +245,7 @@ class SettingsPage {
                                         'info' =>  __('作者，默认使用设置里的【默认文章作者】', 'wp-locoy')
                                     ),
                                     array(
-                                        'title' => 'post_category',
+                                        'title' => '[post_category]',
                                         'value' => '[标签:分类]',
                                         'info' =>  __('文章分类', 'wp-locoy')
                                     ),
