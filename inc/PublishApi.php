@@ -5,7 +5,8 @@ namespace WPLocoy;
 use WP_Error;
 use WP_Query;
 
-class PublishApi {
+class PublishApi
+{
     public string $secret = '';
 
     public bool $check_title_empty = false;
@@ -20,7 +21,8 @@ class PublishApi {
 
     public $ondup = 'update'; // skip|update
 
-    public function __construct($args = array()) {
+    public function __construct($args = array())
+    {
         foreach (get_object_vars($this) as $key => $value) {
             if (isset($args[$key])) {
                 $this->$key = $args[$key];
@@ -32,7 +34,8 @@ class PublishApi {
     * 
     * Note: specific post type and post status for more effectily performance.
     */
-    public function post_exists_by_meta($meta_key, $meta_value, $args = array()) {
+    public function post_exists_by_meta($meta_key, $meta_value, $args = array())
+    {
         $defaults = array(
             'post_type'      => 'any',
             'post_status'    => 'any',
@@ -56,7 +59,8 @@ class PublishApi {
         return !empty($query->posts[0]) ? $query->posts[0] : 0;
     }
 
-    public function publish($postarr) {
+    public function publish($postarr)
+    {
         $unsanitized_postarr = $postarr;
 
         // Map post fields.
@@ -242,7 +246,7 @@ class PublishApi {
         if ($post_before)
             $postarr = array_merge(json_decode(json_encode($post_before), true), $postarr);
 
-
+        do_action('wp_locoy_before_insert_post', $postarr);
         $post_id = wp_insert_post($postarr, true, true);
 
         if (is_wp_error($post_id)) {
@@ -258,7 +262,6 @@ class PublishApi {
             require_once ABSPATH . 'wp-admin/includes/image.php';
             require_once ABSPATH . 'wp-admin/includes/media.php';
         }
-
 
         $post_thumbnail_set = false;
 
@@ -315,7 +318,8 @@ class PublishApi {
     }
 
 
-    public function get_post_by_title($title, $post_type = 'post') {
+    public function get_post_by_title($title, $post_type = 'post')
+    {
 
         $query = new WP_Query(
             array(
@@ -340,7 +344,8 @@ class PublishApi {
         return $post;
     }
 
-    public function resolve_user($user_login, $display_name = '') {
+    public function resolve_user($user_login, $display_name = '')
+    {
         $user = get_user_by('login', $user_login);
 
         if ($user) {
@@ -355,7 +360,8 @@ class PublishApi {
         }
     }
 
-    public function map_postarr($postarr = array()) {
+    public function map_postarr($postarr = array())
+    {
         $map = array(
             'meta_input' => array('post_meta', 'meta'),
             'tax_input'  => array('post_taxonomy_list', 'tax'),
@@ -378,7 +384,8 @@ class PublishApi {
         return $postarr;
     }
 
-    public function insert_hierarchical_terms($term_names, $taxonomy, $args = array()) {
+    public function insert_hierarchical_terms($term_names, $taxonomy, $args = array())
+    {
         $term_ids = array();
         $parent_id = 0;
         foreach ($term_names as $term_name) {
@@ -407,7 +414,8 @@ class PublishApi {
         return $term_ids;
     }
 
-    public function insert_terms($terms, $taxonomy) {
+    public function insert_terms($terms, $taxonomy)
+    {
         if (!is_array($terms)) {
             $comma = _x(',', 'tag delimiter');
             if (',' !== $comma) {
@@ -447,7 +455,8 @@ class PublishApi {
      * @param string $post_type
      * @return string The date of the last post, or false on failure.
      */
-    function get_last_post_date($timezone = 'server', $field = 'date', $post_type = 'any') {
+    function get_last_post_date($timezone = 'server', $field = 'date', $post_type = 'any')
+    {
         global $wpdb;
 
         if (!in_array($field, array('date', 'modified'), true)) {
@@ -498,7 +507,8 @@ class PublishApi {
         return false;
     }
 
-    public function is_int($value) {
+    public function is_int($value)
+    {
         return is_numeric($value) && is_int($value + 0);
     }
 }
